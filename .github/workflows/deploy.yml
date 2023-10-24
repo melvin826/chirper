@@ -1,0 +1,33 @@
+name: Laravel Deployment
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.0
+
+      - name: Install Composer dependencies
+        run: composer install
+
+      - name: Build assets (e.g., for Laravel Mix)
+        run: npm install && npm run prod
+
+      - name: Deploy to DigitalOcean
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          ssh-keyscan -H 159.65.5.142 >> $HOME/.ssh/known_hosts
+          ssh -i $SSH_PRIVATE_KEY user@159.65.5.142 "cd /path/to/your/project && git pull origin main && composer install && php artisan migrate"
+
